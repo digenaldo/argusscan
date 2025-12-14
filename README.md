@@ -44,17 +44,19 @@ Unauthorized use of this tool for unauthorized access to systems is **ILLEGAL** 
 
 ## Table of Contents
 
-- [Features](#-features)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
-- [Usage](#-usage)
-- [Shodan Dorks Examples](#-shodan-dorks-examples)
-- [Project Structure](#-project-structure)
-- [Reports](#-reports)
-- [Tool Integration](#-tool-integration)
-- [Troubleshooting](#-troubleshooting)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [Shodan Dorks Examples](#shodan-dorks-examples)
+- [Project Structure](#project-structure)
+- [Reports](#reports)
+- [Tool Integration](#tool-integration)
+- [Troubleshooting](#troubleshooting)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Additional Resources](#additional-resources)
+- [License](#license)
 
 ---
 
@@ -148,6 +150,12 @@ The project will automatically create:
 ## Usage
 
 > **IMPORTANT**: The `--token` (or `-t`) argument is **required** in all executions. Provide your Shodan API key.
+
+### Example Output
+
+![ArgusScan Example](assets/argusscan-example.jpeg)
+
+*Example of ArgusScan CLI output showing Shodan search results for Jenkins instances*
 
 ### Basic Usage
 
