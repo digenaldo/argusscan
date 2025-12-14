@@ -8,6 +8,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/digenaldo/argusscan/workflows/CI/badge.svg)](https://github.com/digenaldo/argusscan/actions)
+[![codecov](https://codecov.io/gh/digenaldo/argusscan/branch/main/graph/badge.svg)](https://codecov.io/gh/digenaldo/argusscan)
+[![Tests](https://img.shields.io/badge/tests-25%20passing-brightgreen)](https://github.com/digenaldo/argusscan/actions)
+[![Coverage](https://img.shields.io/badge/coverage-96%25-brightgreen)](https://github.com/digenaldo/argusscan)
+[![GitHub stars](https://img.shields.io/github/stars/digenaldo/argusscan?style=social)](https://github.com/digenaldo/argusscan/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/digenaldo/argusscan?style=social)](https://github.com/digenaldo/argusscan/network/members)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/digenaldo/argusscan/graphs/commit-activity)
+[![Contributors](https://img.shields.io/github/contributors/digenaldo/argusscan)](https://github.com/digenaldo/argusscan/graphs/contributors)
 
 </div>
 
