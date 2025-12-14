@@ -1,0 +1,61 @@
+# ArgusScan Configuration - Shodan Pentest Automation
+# WARNING: Keep this file secure and do not share your API key
+# 
+# INSTRUCTIONS:
+# 1. Copy this file to config.yaml
+# 2. Add your Shodan API key
+# 3. Adjust settings as needed
+
+# Shodan API Key (get it at https://account.shodan.io/)
+shodan_api_key: "YOUR_API_KEY_HERE"
+
+# Default settings
+defaults:
+  # Default country for filters (BR = Brazil)
+  country: "BR"
+  
+  # Common ports for filtering
+  common_ports: [80, 443, 8080, 8443, 22, 21, 25, 3306, 5432]
+  
+  # Default result limit
+  result_limit: 100
+  
+  # Rate limiting (requests per second)
+  rate_limit: 1.0
+
+# Optional filters
+filters:
+  # Countries of interest (ISO 3166-1 alpha-2 codes)
+  countries:
+    - BR  # Brazil
+    - US  # United States
+    - GB  # United Kingdom
+  
+  # Ports of interest
+  ports:
+    web: [80, 443, 8080, 8443]
+    database: [3306, 5432, 1433, 27017]
+    ssh: [22]
+    ftp: [21, 22]
+
+# Report settings
+report:
+  # Default format (markdown, json, csv, all)
+  default_format: "markdown"
+  
+  # Include full banner in report
+  include_full_banner: false
+  
+  # Banner character limit
+  banner_limit: 500
+  
+  # Include geographic location
+  include_location: true
+
+# Security settings
+security:
+  # Mandatory legal warning
+  show_legal_warning: true
+  
+  # Validate authorization before execution
+  require_authorization: false  # Set to true to require confirmation
