@@ -203,14 +203,31 @@ python argus_scan.py --help
 
 ### Specific CVEs
 
+**Note**: The `vuln:` filter requires a paid Shodan plan (Academic, Small Business, or higher). Free plans cannot use this filter.
+
+For free plans, use alternative queries:
+
 ```bash
-# Jenkins CVE-2024-23897
+# Search by product/version (works with free plan)
+python argus_scan.py "jenkins 2.414" --token YOUR_API_KEY
+python argus_scan.py "apache 2.4.41" --token YOUR_API_KEY
+
+# Search by service and port
+python argus_scan.py "jenkins port:8080" --token YOUR_API_KEY
+
+# Search by banner content
+python argus_scan.py "Jenkins-Crumb" --token YOUR_API_KEY
+```
+
+If you have a paid Shodan plan:
+```bash
+# Jenkins CVE-2024-23897 (requires paid plan)
 python argus_scan.py "vuln:CVE-2024-23897" --token YOUR_API_KEY
 
-# PHP-CGI CVE-2024-4577
+# PHP-CGI CVE-2024-4577 (requires paid plan)
 python argus_scan.py "vuln:CVE-2024-4577" --token YOUR_API_KEY
 
-# Apache Log4j CVE-2021-44228
+# Apache Log4j CVE-2021-44228 (requires paid plan)
 python argus_scan.py "vuln:CVE-2021-44228" --token YOUR_API_KEY
 ```
 

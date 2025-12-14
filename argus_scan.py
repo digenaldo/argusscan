@@ -134,7 +134,18 @@ def search_shodan(api: shodan.Shodan, query: str, filters: Optional[Dict] = None
         return hosts
     
     except shodan.APIError as e:
-        console.print(f"[red]Shodan API Error: {e}[/red]")
+        error_msg = str(e)
+        console.print(f"[red]Shodan API Error: {error_msg}[/red]")
+        
+        # Provide helpful message for vuln filter limitation
+        if "vuln" in query.lower() and ("academic" in error_msg.lower() or "subscribers" in error_msg.lower()):
+            console.print("\n[yellow]Note: The 'vuln:' filter requires a paid Shodan plan (Academic, Small Business, or higher).[/yellow]")
+            console.print("[yellow]Alternative queries that work with free plans:[/yellow]")
+            console.print("  - Search by product/version: 'jenkins 2.414'")
+            console.print("  - Search by service: 'jenkins port:8080'")
+            console.print("  - Search by banner: 'Jenkins-Crumb'")
+            console.print("  - Combine filters: 'apache 2.4.41 country:BR'")
+        
         sys.exit(1)
     except Exception as e:
         console.print(f"[red]Unexpected error: {e}[/red]")
