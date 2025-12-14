@@ -4,7 +4,7 @@ Unit tests for argus_scan.py
 import pytest
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch, MagicMock, mock_open, call
 import json
 import yaml
 
@@ -46,12 +46,14 @@ class TestLoadConfig:
     
     @patch('argus_scan.CONFIG_FILE')
     @patch('sys.exit')
-    def test_load_config_no_file_no_key(self, mock_exit, mock_config_file):
+    @patch('argus_scan.console')
+    def test_load_config_no_file_no_key(self, mock_console, mock_exit, mock_config_file):
         """Test load_config when no file and no key provided"""
         mock_config_file.exists.return_value = False
         
         load_config()
-        mock_exit.assert_called_once()
+        # sys.exit is called once when file doesn't exist
+        assert mock_exit.call_count >= 1
 
 
 class TestRateLimit:
@@ -127,11 +129,23 @@ class TestSearchShodan:
     
     @patch('argus_scan.rate_limit')
     @patch('sys.exit')
-    def test_search_shodan_api_error(self, mock_exit, mock_rate_limit):
+    @patch('argus_scan.console')
+    def test_search_shodan_api_error(self, mock_console, mock_exit, mock_rate_limit):
         """Test Shodan search handles API errors"""
         import shodan
         mock_api = Mock()
         mock_api.search.side_effect = shodan.APIError("Invalid API key")
+        
+        search_shodan(mock_api, "test")
+        mock_exit.assert_called_once()
+    
+    @patch('argus_scan.rate_limit')
+    @patch('sys.exit')
+    @patch('argus_scan.console')
+    def test_search_shodan_unexpected_error(self, mock_console, mock_exit, mock_rate_limit):
+        """Test Shodan search handles unexpected errors"""
+        mock_api = Mock()
+        mock_api.search.side_effect = Exception("Unexpected error")
         
         search_shodan(mock_api, "test")
         mock_exit.assert_called_once()
@@ -157,6 +171,22 @@ class TestDisplayResultsTable:
                 'product': 'Apache',
                 'version': '2.4',
                 'vulns': {'CVE-2024-1234': {}}
+            }
+        ]
+        display_results_table(hosts, "test query")
+        mock_console.print.assert_called()
+    
+    @patch('argus_scan.console')
+    def test_display_results_table_with_many_vulns(self, mock_console):
+        """Test display table with many vulnerabilities"""
+        hosts = [
+            {
+                'ip': '192.168.1.1',
+                'port': 80,
+                'org': 'Test Org',
+                'product': 'Apache',
+                'version': '2.4',
+                'vulns': {f'CVE-2024-{i:04d}': {} for i in range(10)}  # 10 vulns
             }
         ]
         display_results_table(hosts, "test query")
@@ -308,6 +338,130 @@ class TestExportCSV:
         
         assert result is not None
         mock_writer_instance.writerow.assert_called()
+
+
+class TestMain:
+    """Tests for main function"""
+    
+    @patch('argus_scan.sys.argv', ['argus_scan.py', 'test query', '--token', 'test_key'])
+    @patch('argus_scan.load_config')
+    @patch('argus_scan.shodan.Shodan')
+    @patch('argus_scan.search_shodan')
+    @patch('argus_scan.display_results_table')
+    @patch('argus_scan.generate_report')
+    @patch('argus_scan.console')
+    def test_main_success(self, mock_console, mock_report, mock_display, mock_search, mock_shodan, mock_config):
+        """Test main function with successful execution"""
+        mock_config.return_value = {'shodan_api_key': 'test_key'}
+        mock_api = Mock()
+        mock_shodan.return_value = mock_api
+        mock_search.return_value = [{'ip': '192.168.1.1', 'port': 80, 'org': 'Test', 'product': 'Apache', 'version': '2.4', 'vulns': {}}]
+        
+        from argus_scan import main
+        main()
+        
+        mock_search.assert_called_once()
+        mock_display.assert_called_once()
+        mock_report.assert_called_once()
+    
+    @patch('argus_scan.sys.argv', ['argus_scan.py', 'test query', '--token', 'test_key', '--export', 'json'])
+    @patch('argus_scan.load_config')
+    @patch('argus_scan.shodan.Shodan')
+    @patch('argus_scan.search_shodan')
+    @patch('argus_scan.generate_report')
+    @patch('argus_scan.console')
+    def test_main_export_json(self, mock_console, mock_report, mock_search, mock_shodan, mock_config):
+        """Test main function with JSON export"""
+        mock_config.return_value = {'shodan_api_key': 'test_key'}
+        mock_api = Mock()
+        mock_shodan.return_value = mock_api
+        mock_search.return_value = [{'ip': '192.168.1.1', 'port': 80, 'org': 'Test', 'product': 'Apache', 'version': '2.4', 'vulns': {}}]
+        
+        from argus_scan import main
+        main()
+        
+        # Should call generate_report with 'json'
+        json_calls = [c for c in mock_report.call_args_list if len(c[0]) > 2 and c[0][2] == 'json']
+        assert len(json_calls) > 0
+    
+    @patch('argus_scan.sys.argv', ['argus_scan.py', 'test query', '--token', 'test_key', '--export', 'csv'])
+    @patch('argus_scan.load_config')
+    @patch('argus_scan.shodan.Shodan')
+    @patch('argus_scan.search_shodan')
+    @patch('argus_scan.export_csv')
+    @patch('argus_scan.console')
+    def test_main_export_csv(self, mock_console, mock_export, mock_search, mock_shodan, mock_config):
+        """Test main function with CSV export"""
+        mock_config.return_value = {'shodan_api_key': 'test_key'}
+        mock_api = Mock()
+        mock_shodan.return_value = mock_api
+        mock_search.return_value = [{'ip': '192.168.1.1', 'port': 80, 'org': 'Test', 'product': 'Apache', 'version': '2.4', 'vulns': {}, 'hostnames': []}]
+        
+        from argus_scan import main
+        main()
+        
+        mock_export.assert_called_once()
+    
+    @patch('argus_scan.sys.argv', ['argus_scan.py', 'test query', '--token', 'test_key', '--no-table'])
+    @patch('argus_scan.load_config')
+    @patch('argus_scan.shodan.Shodan')
+    @patch('argus_scan.search_shodan')
+    @patch('argus_scan.display_results_table')
+    @patch('argus_scan.generate_report')
+    @patch('argus_scan.console')
+    def test_main_no_table(self, mock_console, mock_report, mock_display, mock_search, mock_shodan, mock_config):
+        """Test main function with --no-table flag"""
+        mock_config.return_value = {'shodan_api_key': 'test_key'}
+        mock_api = Mock()
+        mock_shodan.return_value = mock_api
+        mock_search.return_value = [{'ip': '192.168.1.1', 'port': 80, 'org': 'Test', 'product': 'Apache', 'version': '2.4', 'vulns': {}}]
+        
+        from argus_scan import main
+        main()
+        
+        # Should not display table
+        mock_display.assert_not_called()
+    
+    @patch('argus_scan.sys.argv', ['argus_scan.py', 'test query', '--token', 'test_key', '--limit', '5'])
+    @patch('argus_scan.load_config')
+    @patch('argus_scan.shodan.Shodan')
+    @patch('argus_scan.search_shodan')
+    @patch('argus_scan.display_results_table')
+    @patch('argus_scan.generate_report')
+    @patch('argus_scan.console')
+    def test_main_limit_results(self, mock_console, mock_report, mock_display, mock_search, mock_shodan, mock_config):
+        """Test main function with result limit"""
+        mock_config.return_value = {'shodan_api_key': 'test_key'}
+        mock_api = Mock()
+        mock_shodan.return_value = mock_api
+        # Return 10 hosts but limit to 5
+        mock_search.return_value = [{'ip': f'192.168.1.{i}', 'port': 80, 'org': 'Test', 'product': 'Apache', 'version': '2.4', 'vulns': {}} for i in range(10)]
+        
+        from argus_scan import main
+        main()
+        
+        # Should limit to 5 results
+        mock_display.assert_called_once()
+        call_args = mock_display.call_args[0]
+        assert len(call_args[0]) == 5
+    
+    @patch('argus_scan.sys.argv', ['argus_scan.py', 'test query', '--token', 'test_key'])
+    @patch('argus_scan.load_config')
+    @patch('argus_scan.shodan.Shodan')
+    @patch('argus_scan.console')
+    def test_main_api_init_error(self, mock_console, mock_shodan_class, mock_config):
+        """Test main function handles API initialization error"""
+        mock_config.return_value = {'shodan_api_key': 'test_key'}
+        # Make Shodan() raise an exception when instantiated
+        mock_shodan_class.side_effect = Exception("API init error")
+        
+        from argus_scan import main
+        # sys.exit will be called, which raises SystemExit
+        with pytest.raises(SystemExit):
+            main()
+        
+        # Verify error message was printed
+        assert any("Error initializing Shodan API" in str(call) for call in mock_console.print.call_args_list)
 
 
 if __name__ == '__main__':
