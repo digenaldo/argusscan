@@ -1,6 +1,6 @@
 <div align="center">
 
-![ArgusScan Logo](assets/argusscan-logo.png)
+<img src="assets/argusscan-logo.png" alt="ArgusScan Logo" width="300">
 
 # ArgusScan - Shodan Pentest Automation
 
