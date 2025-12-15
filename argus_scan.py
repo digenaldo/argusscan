@@ -167,14 +167,22 @@ def display_results_table(hosts: List[Dict], query: str):
     
     for host in hosts:
         vulns_str = ", ".join(list(host['vulns'].keys())[:3]) if host['vulns'] else "N/A"
-        if len(host['vulns']) > 3:
+        if host['vulns'] and len(host['vulns']) > 3:
             vulns_str += f" (+{len(host['vulns']) - 3})"
         
+        # Handle None values safely
+        org = host.get('org') or 'N/A'
+        org_display = org[:30] if len(org) > 30 else org
+        
+        product = host.get('product') or 'N/A'
+        version = host.get('version') or 'N/A'
+        product_display = f"{product} {version}".strip()[:25]
+        
         table.add_row(
-            host['ip'],
-            str(host['port']),
-            host['org'][:30] if len(host['org']) > 30 else host['org'],
-            f"{host['product']} {host['version']}".strip()[:25],
+            host.get('ip', 'N/A'),
+            str(host.get('port', 'N/A')),
+            org_display,
+            product_display,
             vulns_str
         )
     
