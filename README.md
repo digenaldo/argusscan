@@ -304,13 +304,13 @@ python argus_scan.py "ftp anonymous" --token YOUR_API_KEY
 
 ```
 argusscan/
-├── argus_scan.py          # Main CLI script
+├── argus_scan.py               # Main CLI script
 ├── requirements.txt            # Python dependencies
 ├── config.yaml                 # Configuration (API key, filters)
 ├── assets/                     # Project assets (logo, images)
-│   └── argusscan-logo.png     # ArgusScan logo
+│   └── argusscan-logo.png      # ArgusScan logo
 ├── templates/
-│   └── pentest_report.md      # Jinja2 template for reports
+│   └── pentest_report.md       # Jinja2 template for reports
 ├── reports/                    # Generated reports (auto-created)
 │   ├── pentest_CVE-2024-23897_20240101_120000.md
 │   ├── shodan_jenkins_20240101_120000.json
