@@ -191,6 +191,53 @@ class TestDisplayResultsTable:
         ]
         display_results_table(hosts, "test query")
         mock_console.print.assert_called()
+    
+    @patch('argus_scan.console')
+    def test_display_results_table_with_none_values(self, mock_console):
+        """Test display table handles None values in org, product, version"""
+        hosts = [
+            {
+                'ip': '192.168.1.1',
+                'port': 80,
+                'org': None,  # None value
+                'product': None,  # None value
+                'version': None,  # None value
+                'vulns': {}
+            },
+            {
+                'ip': '192.168.1.2',
+                'port': 443,
+                'org': 'Test Org',  # Valid value
+                'product': None,  # None value
+                'version': '2.4',  # Valid value
+                'vulns': {'CVE-2024-1234': {}}
+            },
+            {
+                'ip': '192.168.1.3',
+                'port': 22,
+                # Missing keys (should use .get() defaults)
+                'vulns': {}
+            }
+        ]
+        # Should not raise TypeError
+        display_results_table(hosts, "test query")
+        mock_console.print.assert_called()
+    
+    @patch('argus_scan.console')
+    def test_display_results_table_with_long_org_name(self, mock_console):
+        """Test display table truncates long organization names"""
+        hosts = [
+            {
+                'ip': '192.168.1.1',
+                'port': 80,
+                'org': 'A' * 50,  # Long org name
+                'product': 'Apache',
+                'version': '2.4',
+                'vulns': {}
+            }
+        ]
+        display_results_table(hosts, "test query")
+        mock_console.print.assert_called()
 
 
 class TestGenerateReport:
