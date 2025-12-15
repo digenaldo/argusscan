@@ -550,8 +550,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **ArgusScan Team**
 
-- GitHub: [@your-username](https://github.com/your-username)
-- Email: security@example.com
+- GitHub: [@digenaldo](https://github.com/digenaldo)
+- Email: digenaldo.rangel@gmail.com
 
 ---
 
